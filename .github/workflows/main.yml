@@ -1,0 +1,225 @@
+name: CI Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      RUN_SELENIUM_JAVA:
+        type: boolean
+        default: false
+      RUN_SELENIUM_POP:
+        type: boolean
+        default: false
+      RUN_SELENIUM_JS:
+        type: boolean
+        default: false
+      RUN_PLAYWRIGHT_JAVA:
+        type: boolean
+        default: false
+      RUN_PLAYWRIGHT_JS:
+        type: boolean
+        default: false
+      RUN_CYPRESS_JS:
+        type: boolean
+        default: false
+      NUMBER_OF_RUNS:
+        type: string
+        default: '2'
+
+jobs:
+  playwright-javaScript:
+    runs-on: self-hosted
+    if: inputs.RUN_PLAYWRIGHT_JS
+    services:
+      docker:
+        image: docker:dind
+        options: --privileged --shm-size=2g
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+    container:
+      image: ubuntu:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run Playwright JavaScript Tests
+        if: inputs.RUN_PLAYWRIGHT_JS
+        run: |
+          cd playwright/js
+          npm ci
+          npx playwright install
+          npx playwright install-deps
+          for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+              npm run test || true
+          done           
+          cp timings.csv playwright-js.csv
+      - name: Debug timings.csv and playwright-js.csv
+        run: |
+          cd playwright/js
+          ls -la
+   
+      - name: Copy timings.csv to playwright-js.csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-js.csv
+          path: playwright/js/playwright-js.csv
+          if-no-files-found: ignore
+
+  playwright-java:
+    runs-on: self-hosted
+    if: inputs.RUN_PLAYWRIGHT_JAVA
+    services:
+      docker:
+        image: docker:dind
+        options: --privileged --shm-size=2g
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+    container:
+      image: ubuntu:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y curl tar
+          
+      - name: Install Maven
+        run: |
+          MAVEN_VERSION=3.8.8
+          curl -fsSL https://downloads.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -o maven.tar.gz
+          tar -xzf maven.tar.gz -C /opt/
+          ln -s /opt/apache-maven-$MAVEN_VERSION/bin/mvn /usr/bin/mvn
+      - name: Run Playwright Java Tests
+        if: inputs.RUN_PLAYWRIGHT_JAVA
+        run: |
+          cd playwright/java
+          mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args='install-deps' 
+          mvn test-compile 
+          for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+             mvn clean test || true
+          done 
+          cp timings.csv playwright-java.csv
+      - name: Debug timings.csv and playwright-java.csv
+        run: |
+          cd playwright/java
+          ls -la
+   
+      - name: Copy timings.csv to playwright-java.csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-java.csv
+          path: playwright/java/playwright-java.csv
+          if-no-files-found: ignore
+
+  cypress-js:
+    runs-on: self-hosted
+    if: inputs.RUN_CYPRESS_JS
+    services:
+      docker:
+        image: docker:dind
+        options: --privileged --shm-size=2g
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+    container:
+      image: ubuntu:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
+      - name: Run Cypress Tests
+        if: inputs.RUN_CYPRESS_JS
+        run: |
+          cd cypress/js
+          npm ci
+          for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+              npm run test || true
+          done           
+          cp timings.csv playwright-js.csv
+      - name: Debug timings.csv and cypress-js.csv
+        run: |
+          cd cypress/js
+          ls -la
+   
+      - name: Copy timings.csv to cypress-js.csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-js.csv
+          path: cypress/js/cypress-js.csv
+          if-no-files-found: ignore
+
+  selenium-java:
+    runs-on: self-hosted
+    if: inputs.RUN_SELENIUM_JAVA
+    services:
+      docker:
+        image: docker:dind
+        options: --privileged --shm-size=2g
+    container:
+      image: ubuntu:latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y curl tar docker.io
+      
+      # - name: Verify Docker in container
+      #   run: docker ps -a
+
+      # - name: Checkout code
+      #   uses: actions/checkout@v3
+
+      # - name: Set up Java
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: 'temurin'
+      #     java-version: '17'
+
+      # - name: Install Maven
+      #   run: |
+      #     MAVEN_VERSION=3.8.8
+      #     curl -fsSL https://downloads.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -o maven.tar.gz
+      #     tar -xzf maven.tar.gz -C /opt/
+      #     ln -s /opt/apache-maven-$MAVEN_VERSION/bin/mvn /usr/bin/mvn
+
+      - name: Run Selenium Java Tests
+        if: inputs.RUN_SELENIUM_JAVA
+        run: |
+          docker run -v /var/run/docker.sock:/var/run/docker.sock docker:latest docker ps
+          docker run -i --rm -v $PWD/selenium/java:/workspace -w /workspace maven:3 mvn test-compile
+         # cp timings.csv selenium-java.csv
+      - name: Debug timings.csv and selenium-java.csv
+        run: |
+          cd selenium/java
+          ls -la
+   
+      - name: Copy timings.csv to selenium-java.csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-java.csv
+          path: selenium/java/selenium-java.csv
+          if-no-files-found: ignore
