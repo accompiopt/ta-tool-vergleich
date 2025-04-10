@@ -114,7 +114,7 @@ jobs:
           cd selenium/java_PageObjectPattern
           ls -la
    
-     - name: Copy timings.csv to selenium-java-pop.csv
+     - name: Upload Selenium Java Page Object Pattern results
        uses: actions/upload-artifact@v4
        with:
           name: selenium-java-pop.csv
@@ -208,17 +208,17 @@ jobs:
         env:
           TAKE_SCREENSHOTS: "true"
    
-      - name: C opy timings.csv to playwright-js.csv
+      - name: Debug timings.csv and selenium-java.csv
+        run: |
+          cd playwright/js
+          ls -la
+
+      - name: Upload Playwright JavaScript results
         uses: actions/upload-artifact@v4
         with:
           name: playwright-js.csv
           path: playwright/js/playwright-js.csv
           if-no-files-found: ignore
-
-      - name: Debug timings.csv and selenium-java.csv
-        run: |
-          cd playwright/js
-          ls -la
           
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
@@ -278,7 +278,7 @@ jobs:
           cd playwright/java
           ls -la
    
-      - name: Copy timings.csv to playwright-java.csv
+      - name: Upload Playwright Java results
         uses: actions/upload-artifact@v4
         with:
           name: playwright-java.csv
@@ -334,7 +334,7 @@ jobs:
           cd cypress/js
           ls -la
    
-      - name: Copy timings.csv to cypress-js.csv
+      - name: Upload Cypress results
         uses: actions/upload-artifact@v4
         with:
           name: cypress-js.csv
