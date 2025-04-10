@@ -196,7 +196,6 @@ jobs:
           node-version: '18'
 
       - name: Run Playwright JavaScript Tests
-        if: inputs.RUN_PLAYWRIGHT_JS
         run: |
           cd playwright/js
           npm ci
@@ -206,8 +205,10 @@ jobs:
               npm run test || true
           done           
           cp timings.csv playwright-js.csv
+        env:
+          TAKE_SCREENSHOTS: "true"
    
-      - name: Copy timings.csv to playwright-js.csv
+      - name: C opy timings.csv to playwright-js.csv
         uses: actions/upload-artifact@v4
         with:
           name: playwright-js.csv
@@ -223,7 +224,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
            name: playwright-js-screenshots
-           path: playwright/js/test-results/**/*.png
+           path: playwright/js/screenshots/
            if-no-files-found: ignore
            
   playwright-java:
@@ -261,7 +262,6 @@ jobs:
           ln -s /opt/apache-maven-$MAVEN_VERSION/bin/mvn /usr/bin/mvn
           
       - name: Run Playwright Java Tests
-        if: inputs.RUN_PLAYWRIGHT_JAVA
         run: |
           cd playwright/java
           mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args='install-deps' 
@@ -270,6 +270,8 @@ jobs:
              mvn clean test || true
           done 
           cp timings.csv playwright-java.csv
+        env:
+          TAKE_SCREENSHOTS: "true"
           
       - name: Debug timings.csv and playwright-java.csv
         run: |
@@ -323,9 +325,9 @@ jobs:
           export XDG_RUNTIME_DIR=/tmp/xdg
           mkdir -p $XDG_RUNTIME_DIR
           for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
-              npm run test || true
+              npm run test -- --env screenshot=true || true
           done           
-          cp timings.csv playwright-js.csv
+          cp timings.csv cypress-js.csv
           
       - name: Debug timings.csv and cypress-js.csv
         run: |

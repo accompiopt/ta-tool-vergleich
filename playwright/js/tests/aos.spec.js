@@ -54,7 +54,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Cart Text Element)
-            const buffer = await page.locator("//DIV[@id='shoppingCart']/DIV/LABEL").screenshot();
+            const name = `01_shopping_cart_is_empty.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("01_shopping_cart_is_empty", { body: buffer, contentType: 'image/png' });
         }
     });
@@ -76,7 +78,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Full Page)
-            const buffer = await page.screenshot({ fullPage: true });
+            const name = `02_filter_set.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("02_filter_set", { body: buffer, contentType: 'image/png' });
         }
     });
@@ -101,7 +105,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Viewport)
-            const buffer = await page.screenshot();
+            const name = `03_popular_items_section_after_scroll.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("03_popular_items_section_after_scroll", { body: buffer, contentType: 'image/png' });
         }
     });
@@ -139,7 +145,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Cart Element)
-            const buffer = await page.locator("//*[@id='shoppingCart']").screenshot();
+            const name = `04_shopping_cart_with_products.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("04_shopping_cart_with_products", { body: buffer, contentType: 'image/png' });
         }
     });
@@ -188,10 +196,11 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Account Details Element)
-            const buffer = await page.locator("//*[@id='registerPage']").screenshot();
+            const name = `05_create_account_page.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("05_create_account_page", { body: buffer, contentType: 'image/png' });
         }
-
         // Submit the form
         await page.locator("//BUTTON[@id='register_btnundefined']").click();
     });
@@ -207,7 +216,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Order Payment Element)
-            const buffer = await page.locator("//*[@id='orderPayment']").screenshot();
+            const name = `06_order_payment_page.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("06_order_payment_page", { body: buffer, contentType: 'image/png' });
         }
     });
@@ -244,10 +255,11 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Order Payment Element)
-            const buffer = await page.locator("//*[@id='orderPayment']").screenshot();
+            const name = `07_payment_method.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("07_payment_method", { body: buffer, contentType: 'image/png' });
         }
-
         // Submit order
         await page.locator("//BUTTON[@id='pay_now_btn_ManualPayment']").click();
     });
@@ -264,7 +276,9 @@ test('orders a mouse and a speaker as new user', async ({ page }, testInfo) => {
 
         if (TAKE_SCREENSHOTS) {
             // Make a screenshot (Order Payment Success Element)
-            const buffer = await page.locator("//*[@id='orderPaymentSuccess']").screenshot();
+            const name = `08_order_finished.png`;
+            const path = `screenshots/${name}`;
+            const buffer = await page.screenshot({ fullPage: true, path });
             await testInfo.attach("08_order_finished", { body: buffer, contentType: 'image/png' });
         }
     });
