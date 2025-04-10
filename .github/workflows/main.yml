@@ -26,6 +26,154 @@ on:
         default: '2'
 
 jobs:
+  selenium_java:
+    runs-on: self-hosted
+    if: inputs.RUN_SELENIUM_JAVA
+    container:
+      image: ubuntu:latest
+          
+    steps:
+     - name: Install Dependencies (Java, Maven, Chrome)
+       run: |
+          apt-get update
+          apt-get install -y wget curl unzip gnupg git
+          apt-get install -y openjdk-17-jdk maven fonts-liberation libnss3 libatk-bridge2.0-0 libgtk-3-0 \
+            libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2t64 libxshmfence1 \
+            libpangocairo-1.0-0 libpango-1.0-0
+
+     - name: Checkout code
+       uses: actions/checkout@v3
+
+     - name: Set up Java
+       uses: actions/setup-java@v3
+       with:
+         distribution: 'temurin'
+         java-version: '17'
+       
+     - name: Run Selenium Java tests
+       run: |
+          cd selenium/java
+          for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+             mvn clean test -DTAKE_SCREENSHOTS=true || true
+             done
+          cp timings.csv selenium-java.csv
+
+     - name: Debug timings.csv and selenium-java.csv
+       run: |
+          cd selenium/java
+          ls -la
+     
+     - name: Upload Selenium Java results
+       uses: actions/upload-artifact@v4
+       with:
+         name: selenium-java-results
+         path: selenium/java/selenium-java.csv
+         if-no-files-found: ignore
+
+     - name: Upload screenshots
+       uses: actions/upload-artifact@v4
+       with:
+          name: selenium-screenshots
+          path: selenium/java/screenshots/
+          if-no-files-found: ignore
+
+  selenium_pop:
+    runs-on: self-hosted
+    if: inputs.RUN_SELENIUM_POP
+    container:
+      image: ubuntu:latest
+          
+    steps:
+     - name: Install Dependencies (Java, Maven, Chrome)
+       run: |
+          apt-get update
+          apt-get install -y wget curl unzip gnupg git
+          apt-get install -y openjdk-17-jdk maven fonts-liberation libnss3 libatk-bridge2.0-0 libgtk-3-0 \
+            libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2t64 libxshmfence1 \
+            libpangocairo-1.0-0 libpango-1.0-0
+            
+     - name: Checkout code
+       uses: actions/checkout@v3
+      
+     - name: Set up Java
+       uses: actions/setup-java@v3
+       with:
+         distribution: 'temurin'
+         java-version: '17'
+
+     - name: Run Selenium Java Page Object Pattern tests
+       run: |
+          cd selenium/java_PageObjectPattern
+             for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+             mvn clean test || true
+          done
+          cp timings.csv selenium-java-pop.csv
+          
+     - name: Debug timings.csv and selenium-java-pop.csv
+       run: |
+          cd selenium/java_PageObjectPattern
+          ls -la
+   
+     - name: Copy timings.csv to selenium-java-pop.csv
+       uses: actions/upload-artifact@v4
+       with:
+          name: selenium-java-pop.csv
+          path: selenium/java_PageObjectPattern/selenium-java-pop.csv
+          if-no-files-found: ignore
+
+     - name: Upload screenshots
+       uses: actions/upload-artifact@v4
+       with:
+          name: selenium-java-pop-screenshots
+          path: selenium/java_PageObjectPattern/screenshots/
+          if-no-files-found: ignore
+
+  selenium_js:
+    runs-on: self-hosted
+    if: inputs.RUN_SELENIUM_JS
+    container:
+      image: ubuntu:latest
+      
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v3
+
+     - name: Set up Node.js
+       uses: actions/setup-node@v3
+       with:
+          node-version: '18'
+
+     - name: Run Selenium JavaScript tests
+       run: |
+          cd selenium/js
+          mkdir -p ./tmp
+          export TESTCONTAINERS_TMPDIR=$(pwd)/tmp
+          export TAKE_SCREENSHOT=true
+          npm ci
+             for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
+             npm run test || true
+          done
+          cp timings.csv selenium-js.csv
+          
+     - name: Debug timings.csv and selenium-js.csv
+       run: |
+          cd selenium/js
+          ls -la
+          
+     - name: Upload Selenium JS results
+       uses: actions/upload-artifact@v4
+       with:
+          name: selenium-js-results
+          path: selenium/js/selenium-js.csv
+          if-no-files-found: ignore
+
+     - name: Upload screenshots
+       uses: actions/upload-artifact@v4
+       with:
+          name: selenium-js-screenshots
+          path: selenium/js/screenshots/
+          if-no-files-found: ignore
+          
   playwright-javaScript:
     runs-on: self-hosted
     if: inputs.RUN_PLAYWRIGHT_JS
@@ -34,7 +182,7 @@ jobs:
         image: docker:dind
         options: --privileged --shm-size=2g
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - /var/run/docker.sock:/var/run/docker.sock
     container:
       image: ubuntu:latest
 
@@ -58,10 +206,6 @@ jobs:
               npm run test || true
           done           
           cp timings.csv playwright-js.csv
-      - name: Debug timings.csv and playwright-js.csv
-        run: |
-          cd playwright/js
-          ls -la
    
       - name: Copy timings.csv to playwright-js.csv
         uses: actions/upload-artifact@v4
@@ -70,6 +214,18 @@ jobs:
           path: playwright/js/playwright-js.csv
           if-no-files-found: ignore
 
+      - name: Debug timings.csv and selenium-java.csv
+        run: |
+          cd playwright/js
+          ls -la
+          
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+           name: playwright-js-screenshots
+           path: playwright/js/test-results/**/*.png
+           if-no-files-found: ignore
+           
   playwright-java:
     runs-on: self-hosted
     if: inputs.RUN_PLAYWRIGHT_JAVA
@@ -78,7 +234,7 @@ jobs:
         image: docker:dind
         options: --privileged --shm-size=2g
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - /var/run/docker.sock:/var/run/docker.sock
     container:
       image: ubuntu:latest
 
@@ -103,6 +259,7 @@ jobs:
           curl -fsSL https://downloads.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -o maven.tar.gz
           tar -xzf maven.tar.gz -C /opt/
           ln -s /opt/apache-maven-$MAVEN_VERSION/bin/mvn /usr/bin/mvn
+          
       - name: Run Playwright Java Tests
         if: inputs.RUN_PLAYWRIGHT_JAVA
         run: |
@@ -113,6 +270,7 @@ jobs:
              mvn clean test || true
           done 
           cp timings.csv playwright-java.csv
+          
       - name: Debug timings.csv and playwright-java.csv
         run: |
           cd playwright/java
@@ -125,6 +283,13 @@ jobs:
           path: playwright/java/playwright-java.csv
           if-no-files-found: ignore
 
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+           name: playwright-screenshots
+           path: playwright/java/screenshots/
+           if-no-files-found: ignore
+
   cypress-js:
     runs-on: self-hosted
     if: inputs.RUN_CYPRESS_JS
@@ -133,7 +298,7 @@ jobs:
         image: docker:dind
         options: --privileged --shm-size=2g
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - /var/run/docker.sock:/var/run/docker.sock
     container:
       image: ubuntu:latest
 
@@ -150,15 +315,18 @@ jobs:
         run: |
           apt-get update
           apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
+      
       - name: Run Cypress Tests
-        if: inputs.RUN_CYPRESS_JS
         run: |
           cd cypress/js
           npm ci
+          export XDG_RUNTIME_DIR=/tmp/xdg
+          mkdir -p $XDG_RUNTIME_DIR
           for i in $(seq 1 ${{ inputs.NUMBER_OF_RUNS }}); do
               npm run test || true
           done           
           cp timings.csv playwright-js.csv
+          
       - name: Debug timings.csv and cypress-js.csv
         run: |
           cd cypress/js
@@ -171,55 +339,9 @@ jobs:
           path: cypress/js/cypress-js.csv
           if-no-files-found: ignore
 
-  selenium-java:
-    runs-on: self-hosted
-    if: inputs.RUN_SELENIUM_JAVA
-    services:
-      docker:
-        image: docker:dind
-        options: --privileged --shm-size=2g
-    container:
-      image: ubuntu:latest
-
-    steps:
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y curl tar docker.io
-      
-      # - name: Verify Docker in container
-      #   run: docker ps -a
-
-      # - name: Checkout code
-      #   uses: actions/checkout@v3
-
-      # - name: Set up Java
-      #   uses: actions/setup-java@v3
-      #   with:
-      #     distribution: 'temurin'
-      #     java-version: '17'
-
-      # - name: Install Maven
-      #   run: |
-      #     MAVEN_VERSION=3.8.8
-      #     curl -fsSL https://downloads.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz -o maven.tar.gz
-      #     tar -xzf maven.tar.gz -C /opt/
-      #     ln -s /opt/apache-maven-$MAVEN_VERSION/bin/mvn /usr/bin/mvn
-
-      - name: Run Selenium Java Tests
-        if: inputs.RUN_SELENIUM_JAVA
-        run: |
-          docker run -v /var/run/docker.sock:/var/run/docker.sock docker:latest docker ps
-          docker run -i --rm -v $PWD/selenium/java:/workspace -w /workspace maven:3 mvn test-compile
-         # cp timings.csv selenium-java.csv
-      - name: Debug timings.csv and selenium-java.csv
-        run: |
-          cd selenium/java
-          ls -la
-   
-      - name: Copy timings.csv to selenium-java.csv
+      - name: Upload Cypress Screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: selenium-java.csv
-          path: selenium/java/selenium-java.csv
+          name: cypress-screenshots
+          path: cypress/js/cypress/screenshots/**/*.png
           if-no-files-found: ignore

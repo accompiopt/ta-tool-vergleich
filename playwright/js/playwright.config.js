@@ -39,6 +39,7 @@ module.exports = defineConfig({
 
     /* Record the test run */
     video: 'off',
+    screenshot: 'on',
   },
 
   expect: {

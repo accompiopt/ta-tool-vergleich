@@ -2,7 +2,8 @@ const { test, expect } = require('@playwright/test');
 
 //const BASE_URL = "http://advantage.proficom.de:8080/";
 const BASE_URL = "http://172.16.15.213:8080/"
-const TAKE_SCREENSHOTS = false;
+//const TAKE_SCREENSHOTS = false;
+const TAKE_SCREENSHOTS = process.env.TAKE_SCREENSHOTS === "true";
 
 const PRODUCT_DATA = [
     ["HP ROAR PLUS WIRELESS SPEAKER", "BLUE", "2"],

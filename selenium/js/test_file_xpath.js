@@ -3,12 +3,13 @@
 const { SeleniumContainer } = require("@testcontainers/selenium");
 const assert = require('chai')
 const { By, Builder, Select, until, Key} = require("selenium-webdriver");
+const fs = require('fs');
 
 
 //set test case specific variables
 //const baseURI = "https://advantageonlineshopping.com"
 const baseURI= "http://172.16.15.213:8080/"
-const TAKE_SCREENSHOT = false
+const TAKE_SCREENSHOT = process.env.TAKE_SCREENSHOT === 'true';
 
 describe('AOS-TestScript', function() {
   let driver;
@@ -253,16 +254,21 @@ describe('AOS-TestScript', function() {
     console.log(`Tracking Number: ${await driver.findElement(By.xpath("//label[@id='trackingNumberLabel']")).getText()}`)
     console.log(`Tracking Number: ${await driver.findElement(By.xpath("//label[@id='orderNumberLabel']")).getText()}`)
   })
-
-
-
-
-
+  
 })
-
+afterEach(async function() {
+  if (this.currentTest.state === 'failed' && TAKE_SCREENSHOT && driver) {
+    if (!fs.existsSync("screenshots")) fs.mkdirSync("screenshots");
+    const name = this.currentTest.title.replace(/\s+/g, "_") + ".png";
+    const image = await driver.takeScreenshot();
+    fs.writeFileSync(`screenshots/${name}`, image, 'base64');
+    console.log(`[Screenshot] Saved: screenshots/${name}`);
+  }
+});
 
 function saveScreenShot(image, fileName) {
-  require('fs').writeFileSync(fileName, image, 'base64')
+  if (!fs.existsSync("screenshots")) fs.mkdirSync("screenshots");
+  fs.writeFileSync(`screenshots/${fileName}`, image, 'base64')
 }
 
 function formatDate(date, format) {

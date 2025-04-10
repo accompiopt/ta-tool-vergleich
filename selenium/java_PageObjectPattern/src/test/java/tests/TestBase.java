@@ -2,19 +2,19 @@ package tests;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
-import org.testcontainers.containers.DefaultRecordingFileFactory;
-import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 
@@ -38,6 +38,19 @@ public class TestBase {
     @Before
     public  void setupTest() {
         init();
+    }
+
+     @BeforeClass
+    public static void setupScreenshotsFolder() {
+        try {
+            Path screenshotsDir = Paths.get("screenshots");
+            if (!Files.exists(screenshotsDir)) {
+                Files.createDirectory(screenshotsDir);
+                System.out.println("[init] Created screenshots/ directory");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void init() {        

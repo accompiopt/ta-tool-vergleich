@@ -8,7 +8,7 @@ import org.openqa.selenium.support.FindBy;
 
 public class HomePage extends PageBase{
 
-    @FindBy(xpath = "//*[@id='miceImg']")
+    @FindBy(xpath = "//div[@class='shop_now_slider']/span[text()='MICE']")
     WebElement miceCategory;
 
     @FindBy(xpath = "//article[@id='popular_items']")

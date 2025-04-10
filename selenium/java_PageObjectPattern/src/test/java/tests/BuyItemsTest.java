@@ -25,7 +25,7 @@ public class BuyItemsTest extends TestBase{
         homePage.clickOnMenuCartButton();
         shoppingCartPage = new ShoppingCartPage(driver);
         Assert.assertTrue("empty Shopping cart not found.", shoppingCartPage.getCartIsEmptyText().contains("Your shopping cart is empty") );
-        //shoppingCartPage.pause(2000);
+        shoppingCartPage.pause(2000);
         shoppingCartPage.takeScreenshot();
         shoppingCartPage.clickOnContinueShoppingLink();
 
@@ -34,8 +34,8 @@ public class BuyItemsTest extends TestBase{
         homePage.clickOnMiceCategory();
         miceCategoryPage = new MiceCategoryPage(driver);
         miceCategoryPage.chooseScrollRingScrollBall();
-        //miceCategoryPage.pause(2000);
-        //miceCategoryPage.takeScreenshotWithScrollDown();
+        miceCategoryPage.pause(2000);
+        miceCategoryPage.takeScreenshotWithScrollDown();
         miceCategoryPage.chooseMouse();
         miceCategoryPage.selectMouseColor();
         miceCategoryPage.addToCart();
